@@ -1,13 +1,9 @@
 package org.detoeuf
 
-import config.Config
-import config.ConfigParser
-import io.swagger.codegen.CliOption
 import io.swagger.codegen.ClientOptInput
 import io.swagger.codegen.ClientOpts
 import io.swagger.codegen.CodegenConfig
 import io.swagger.codegen.DefaultGenerator
-import io.swagger.models.Swagger
 import io.swagger.parser.SwaggerParser
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -16,17 +12,23 @@ class SwaggerCodeGenTask extends DefaultTask {
 
     @TaskAction
     def swaggerCodeGen() {
-        Swagger swagger = new SwaggerParser().read(project.file(project.swaggerInputSpec).absolutePath)
-        CodegenConfig config = forName(project.swaggerLanguage)
+        def swaggerPlugin = project.extensions.findByName('swagger').asType(SwaggerPluginExtension.class)
 
-        config.setOutputDir(project.file(project.swagger.output?:'build/generated-sources/swagger').absolutePath)
-        project.delete(outputDir)
+        // Configuration for language
+        CodegenConfig config = forName(swaggerPlugin.language)
 
-        def swaggerProperties = project.extensions.findByName('swagger').asType(SwaggerPluginExtension.class).getProperties()
-        config.additionalProperties().putAll(swaggerProperties)
+        // Outputdir + clean
+        config.setOutputDir(project.file(swaggerPlugin.output ?: 'build/generated-sources/swagger').absolutePath)
+        project.delete(config.getOutputDir())
 
-        ClientOptInput input = new ClientOptInput().opts(new ClientOpts()).swagger(swagger)
-        input.setConfig(config)
+        // Add additional properties
+        config.additionalProperties().putAll(swaggerPlugin.additionalProperties)
+
+        // Client input
+        ClientOptInput input = new ClientOptInput()
+                .opts(new ClientOpts())
+                .swagger(new SwaggerParser().read(project.file(swaggerPlugin.inputSpec).absolutePath))
+                .config(config)
 
         new DefaultGenerator().opts(input).generate()
     }
