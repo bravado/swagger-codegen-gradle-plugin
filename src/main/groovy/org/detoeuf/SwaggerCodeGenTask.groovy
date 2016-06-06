@@ -19,45 +19,16 @@ class SwaggerCodeGenTask extends DefaultTask {
         Swagger swagger = new SwaggerParser().read(project.file(project.swaggerInputSpec).absolutePath)
         CodegenConfig config = forName(project.swaggerLanguage)
 
-        def outputDir = project.hasProperty('swaggerOutput') ? project.swaggerOutput : 'build/generated-sources/swagger'
-        config.setOutputDir(project.file(outputDir).absolutePath)
+        config.setOutputDir(project.file(project.swagger.output?:'build/generated-sources/swagger').absolutePath)
         project.delete(outputDir)
 
-        if (project.hasProperty('swaggerTemplateDirectory')) {
-            config.additionalProperties().put("templateDir", project.file(project.swaggerTemplateDirectory).absolutePath)
-        }
-        if(project.hasProperty('swaggerApiPackage')){
-            config.additionalProperties().put('apiPackage', project.swaggerApiPackage)
-        }
-        if(project.hasProperty('swaggerConfigPackage')){
-            config.additionalProperties().put('configPackage', project.swaggerConfigPackage)
-        }
-        if(project.hasProperty('swaggerInvokerPackage')){
-            config.additionalProperties().put('invokerPackage', project.swaggerInvokerPackage)
-        }
-        if(project.hasProperty('swaggerModelPackage')){
-            config.additionalProperties().put('modelPackage', project.swaggerModelPackage)
-        }
-
-        if(project.hasProperty("swaggerLibrary")){
-            config.additionalProperties().put('library', project.swaggerLibrary)
-        }
+        def swaggerProperties = project.extensions.findByName('swagger').asType(SwaggerPluginExtension.class).getProperties()
+        config.additionalProperties().putAll(swaggerProperties)
 
         ClientOptInput input = new ClientOptInput().opts(new ClientOpts()).swagger(swagger)
         input.setConfig(config)
 
         new DefaultGenerator().opts(input).generate()
-    }
-
-    private static void applyConfigFileSettings(final CodegenConfig config, final File swaggerConfigFile) {
-        Config genConfig = ConfigParser.read(swaggerConfigFile.absolutePath);
-        if (null != genConfig) {
-            for (CliOption langCliOption : config.cliOptions()) {
-                if (genConfig.hasOption(langCliOption.getOpt())) {
-                    config.additionalProperties().put(langCliOption.getOpt(), genConfig.getOption(langCliOption.getOpt()));
-                }
-            }
-        }
     }
 
     private static CodegenConfig forName(String name) {
