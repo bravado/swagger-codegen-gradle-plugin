@@ -10,7 +10,7 @@ class SwaggerCodeGenPluginTest {
     @Test
     public void swaggerCodeGenPluginAddsSwaggerCodeGenTaskToProject() {
         Project project = ProjectBuilder.builder().build()
-        project.apply plugin: 'org.detoeuf.swagger-code-gen'
+        project.apply plugin: 'org.detoeuf.swagger-codegen'
 
         assertTrue(project.tasks.swagger instanceof SwaggerCodeGenTask)
     }

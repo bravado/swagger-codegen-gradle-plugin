@@ -24,6 +24,16 @@ class SwaggerCodeGenTask extends DefaultTask {
         // Add additional properties
         config.additionalProperties().putAll(swaggerPlugin.additionalProperties)
 
+        if (swaggerPlugin.apis != null) {
+            System.setProperty('apis', swaggerPlugin.apis)
+        }
+        if(swaggerPlugin.models != null) {
+            System.setProperty('models', swaggerPlugin.models)
+        }
+        if(swaggerPlugin.supportingFiles != null) {
+            System.setProperty('supportingFiles', swaggerPlugin.supportingFiles)
+        }
+
         // Client input
         ClientOptInput input = new ClientOptInput()
                 .opts(new ClientOpts())

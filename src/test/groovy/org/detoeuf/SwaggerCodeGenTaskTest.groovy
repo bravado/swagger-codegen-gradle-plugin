@@ -1,9 +1,7 @@
 package org.detoeuf
 
-import org.apache.maven.plugin.descriptor.PluginDescriptorBuilder
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.Ignore
 import org.junit.Test
 
 import static org.junit.Assert.assertTrue
